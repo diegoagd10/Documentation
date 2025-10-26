@@ -606,7 +606,29 @@ systemctl status sleep.target
 sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
 ```
 
-## 11. Next Steps
+## 11. Restore backup
+
+1. Get the backup file from google drive under the backup directories.
+
+2. Copy the download file to svc-01: 
+```
+scp ~/Downloads/_home_charizard10_backups_backup_2025-10-26.tar.gz.gpg charizard10@svc-01.local:/home/charizard10/backups
+_home_charizard10_backups_backup_2025-10-26.tar.gz.gpg
+```
+
+3. Ssh into svc-01 or the new file and decrypt the file: 
+```
+gpg --output backup.tar.gz --decrypt _home_charizard10_backups_backup_2025-10-26.tar.gz.gpg
+```
+
+4. Decompress the file:
+```
+tar -xzf backup.tar.gz
+```
+
+5. Then start importing the files into each application.
+
+## 12. Next Steps
 
 Now that your server is set up and secured, you can install services:
 
