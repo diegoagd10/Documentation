@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    restart: unless-stopped
+    environment:
+      - CF_API_EMAIL=${CF_API_EMAIL}
+      - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}
+    command:
+      # API Dashboard
+      - "--api.dashboard=true"
+      
+      # Entry Points
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      
+      # Cloudflare SSL
+      - "--certificatesresolvers.cloudflare.acme.email=${CF_API_EMAIL}"
+      - "--certificatesresolvers.cloudflare.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.cloudflare.acme.dnschallenge=true"
+      - "--certificatesresolvers.cloudflare.acme.dnschallenge.provider=cloudflare"
+      - "--certificatesresolvers.cloudflare.acme.dnschallenge.delaybeforecheck=30"
+      - "--certificatesresolvers.cloudflare.acme.dnschallenge.resolvers=1.1.1.1:53,1.0.0.1:53"
+      
+      # Docker Provider
+      - "--providers.docker=true"
+      - "--providers.docker.endpoint=unix:///var/run/docker.sock"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=traefik-public"
+
+      # File Provider (para apps remotas y configuración adicional)
+      - "--providers.file.filename=/etc/traefik/dynamic.yml"
+      - "--providers.file.watch=true"
+      
+      # Logs
+      - "--log.level=INFO"
+      - "--accesslog=true"
+      
+    ports:
+      - "80:80"
+      - "443:443"
+      
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik-certs:/letsencrypt
+      - /home/charizard10/traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
+      
+    labels:
+      - "traefik.enable=true"
+      
+      # Dashboard
+      - "traefik.http.routers.dashboard.rule=Host(`${TRAEFIK_HOST}`)"
+      - "traefik.http.routers.dashboard.entrypoints=websecure"
+      - "traefik.http.routers.dashboard.tls.certresolver=cloudflare"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      
+      # Autenticación
+      - "traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_AUTH_USER}"
+      - "traefik.http.routers.dashboard.middlewares=auth"
+      
+    networks:
+      - traefik-public
+
+volumes:
+  traefik-certs:
+
+networks:
+  traefik-public:
+    external: true
