@@ -11,6 +11,9 @@ services:
       - TZ=America/New_York
     networks:
       - traefik-public
+    dns:
+      - 1.1.1.1
+      - 1.0.0.1
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.kuma.rule=Host(`kuma.local.dagdappshub.com`)"
