@@ -27,7 +27,7 @@ This guide covers configuring the Homepage dashboard for monitoring your self-ho
 
    Add the following configuration:
    ```yaml
-   ---
+  [ ---
    # For configuration options and examples, please see:
    # https://gethomepage.dev/configs/services/
 
@@ -68,7 +68,7 @@ This guide covers configuring the Homepage dashboard for monitoring your self-ho
        - Qdrant:
            icon: qdrant.png
            href: https://qdrant.local.dagdappshub.com/dashboard#/welcome
-           description: Vector database administrator
+           description: Vector database administrator](https://simpleicons.org/icons/gnometerminal.svg)
    ```
 
 4. **Update widgets**:
