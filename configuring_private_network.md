@@ -1,136 +1,168 @@
-1. Get a domain
-2. PASO 1: Configurar Cloudflare
-1.1 Obtener API Token
+# Private Network Configuration
 
-Ve a: https://dash.cloudflare.com/profile/api-tokens
-Click "Create Token"
-Usa la plantilla "Edit zone DNS"
-Configura:
+This guide covers setting up a private network infrastructure with SSL termination, DNS routing, and secure access to self-hosted services.
 
-Permissions: Zone → DNS → Edit
-Zone Resources: Include → Specific zone → <YOUR_DOMAIN>
+## Prerequisites
 
+- Domain name registered with Cloudflare
+- Two Ubuntu servers configured and accessible
+- Cloudflare account with API access
+- Basic understanding of DNS and SSL certificates
 
-Click "Continue to summary" → "Create Token"
-COPIA EL TOKEN (solo se muestra una vez)
+## Steps
 
-1.2 Crear registros DNS
+1. **Get a domain** from a registrar and configure it with Cloudflare
 
-Ve a: https://dash.cloudflare.com
-Selecciona tu dominio <YOUR_DOMAIN>.com
-Click en "DNS" → "Records"
-Click "Add record"
-Configura:
+2. **PASO 1: Configurar Cloudflare**
 
-Type: A
-Name: *.local (exactamente así)
-IPv4 address: 192.168.1.100 (tu IP local del servidor)
-Proxy status: ⚪ DESACTIVADO (nube GRIS, no naranja)
-TTL: Auto
+   **1.1 Obtener API Token**
+   - Go to: https://dash.cloudflare.com/profile/api-tokens
+   - Click "Create Token"
+   - Use the template "Edit zone DNS"
+   - Configure permissions:
+     - Zone → DNS → Edit
+     - Zone Resources: Include → Specific zone → <YOUR_DOMAIN>
+   - Click "Continue to summary" → "Create Token"
+   - **COPY THE TOKEN** (shown only once)
 
+   **1.2 Crear registros DNS**
+   - Go to: https://dash.cloudflare.com
+   - Select your domain <YOUR_DOMAIN>.com
+   - Click "DNS" → "Records"
+   - Click "Add record"
+   - Configure:
+     - Type: A
+     - Name: *.local (exactly as shown)
+     - IPv4 address: 192.168.1.100 (your server's local IP)
+     - Proxy status: ⚪ DISABLED (gray cloud, not orange)
+     - TTL: Auto
+   - Click "Save"
 
-Click "Save"
+   ✅ Now *.local.<YOUR_DOMAIN>.com points to your local server.
 
-✅ Ahora *.local.<YOUR_DOMAIN>.com apunta a tu servidor local.
+   Repeat the above for each local server you have.
 
-Repeat the above for each local server you have.
+3. **Connect to server** which will host Traefik and execute:
+   ```bash
+   docker network create traefik-public
+   ```
 
-3. Connect to server which will host traefik and execute the following command
-```
-docker network create traefik-public
-```
+4. **Create a user and password** with the following bash snippet:
+   ```bash
+   echo $(htpasswd -nb <USER> <PASSWORD>) | sed -e s/\\$/\\$\\$/g
+   ```
 
-4. Create a user and password with the following bash snippet:
+   You will need this to configure the TRAEFIK_AUTH_USER environment variable.
 
-echo $(htpasswd -nb <USER> <PASSWORD>) | sed -e s/\\$/\\$\\$/g^C
+5. **Create a stack on Portainer** for Traefik and use `traefik.yml` to configure it and set all environment variables.
 
-You will need this to configure the TRAEFIK_AUTH_USER environment variable
+6. **PASO 6: Probar Traefik Dashboard**
+   - Open your browser
+   - Go to: https://traefik.local.<YOUR_DOMAIN>
+   - Username: <USER>
+   - Password: <PASSWORD>
+   - ✅ You should see the Traefik dashboard with valid SSL certificate (green lock)
 
-5. Create a stack on portainer for traefik and use @traefik.yml to configure it and set all environment variables.
+7. **Configuring local apps** on server where Traefik got installed with:
+   ```yaml
+   networks:
+     - traefik-public
+   labels:
+     - "traefik.enable=true"
+     - "traefik.http.routers.kuma.rule=Host(`kuma.local.<YOUR_DOMAIN>`)"
+     - "traefik.http.routers.kuma.entrypoints=websecure"
+     - "traefik.http.routers.kuma.tls.certresolver=cloudflare"
+     - "traefik.http.services.kuma.loadbalancer.server.port=3001"
+     - "traefik.docker.network=traefik-public"
 
-PASO 6: Probar Traefik Dashboard
+   networks:
+     traefik-public:
+       external: true
+   ```
 
-Abre tu navegador
-Ve a: https://traefik.local.<YOUR_DOMAIN>
-Usuario: <USER>
-Password: <PASSWORD>
-✅ Deberías ver el dashboard de Traefik con certificado SSL válido (candado verde)
+8. **Configuring apps external** to server where Traefik got installed.
 
-7. Configuring local apps on server where trefik got installed with:
+   **8.1 Update** `~/traefik/dynamic.yml` and create the file if it doesn't exist:
+   ```yaml
+   http:
+     routers:
+       portainer-svc02:
+         rule: "Host(`portainer-02.local.<YOUR_DOMAIN>`)"
+         entryPoints:
+           - websecure
+         service: portainer-svc
+         tls:
+           certResolver: cloudflare
 
- ```
-    networks:
-      - traefik-public
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.kuma.rule=Host(`kuma.local.<YOUR_DOMAIN>`)"
-      - "traefik.http.routers.kuma.entrypoints=websecure"
-      - "traefik.http.routers.kuma.tls.certresolver=cloudflare"
-      - "traefik.http.services.kuma.loadbalancer.server.port=3001"
-      - "traefik.docker.network=traefik-public"
+       pgadmin:
+         rule: "Host(`pgadmin.local.<YOUR_DOMAIN>`)"
+         entryPoints:
+           - websecure
+         service: pgadmin-svc
+         tls:
+           certResolver: cloudflare
 
-networks:
-  traefik-public:
-    external: true
- ```
+       redis:
+         rule: "Host(`redis.local.<YOUR_DOMAIN>`)"
+         entryPoints:
+           - websecure
+         service: redis-svc
+         tls:
+           certResolver: cloudflare
 
- 8. Configuring apps external to serevr where traefik got installed.
+       qdrant:
+         rule: "Host(`qdrant.local.<YOUR_DOMAIN>`)"
+         entryPoints:
+           - websecure
+         service: qdrant-svc
+         tls:
+           certResolver: cloudflare
 
- 8.1 Update vim ~/traefik/dynamic.yml and create the file if doesn't exist
+     services:
+       portainer-svc:
+         loadBalancer:
+           servers:
+             - url: "http://192.168.1.19:9000"
 
- ```
- http:
-  routers:
-    portainer-svc02:
-      rule: "Host(`portainer-02.local.<YOUR_DOMAIN>`)"
-      entryPoints:
-        - websecure
-      service: portainer-svc
-      tls:
-        certResolver: cloudflare
+       pgadmin-svc:
+         loadBalancer:
+           servers:
+             - url: "http://192.168.1.19:5050"
 
-    pgadmin:
-      rule: "Host(`pgadmin.local.<YOUR_DOMAIN>`)"
-      entryPoints:
-        - websecure
-      service: pgadmin-svc
-      tls:
-        certResolver: cloudflare
+       redis-svc:
+         loadBalancer:
+           servers:
+             - url: "http://192.168.1.19:8081"
 
-    redis:
-      rule: "Host(`redis.local.<YOUR_DOMAIN>`)"
-      entryPoints:
-        - websecure
-      service: redis-svc
-      tls:
-        certResolver: cloudflare
+       qdrant-svc:
+         loadBalancer:
+           servers:
+             - url: "http://192.168.1.19:6333"
+   ```
 
-    qdrant:
-      rule: "Host(`qdrant.local.<YOUR_DOMAIN>`)"
-      entryPoints:
-        - websecure
-      service: qdrant-svc
-      tls:
-        certResolver: cloudflare
+## Security Considerations
 
-  services:
-    portainer-svc:
-      loadBalancer:
-        servers:
-          - url: "http://192.168.1.19:9000"
+- SSL certificates auto-renew via Let's Encrypt
+- All traffic encrypted with TLS 1.2+
+- Basic authentication on Traefik dashboard
+- Firewall configured to restrict access
+- DNS challenge prevents port 80/443 exposure
 
-    pgadmin-svc:
-      loadBalancer:
-        servers:
-          - url: "http://192.168.1.19:5050"
+## Troubleshooting
 
-    redis-svc:
-      loadBalancer:
-        servers:
-          - url: "http://192.168.1.19:8081"
+### SSL Certificate Problems
+- Check Cloudflare API token permissions
+- Verify DNS records are correct
+- Ensure domain is not proxied in Cloudflare
 
-    qdrant-svc:
-      loadBalancer:
-        servers:
-          - url: "http://192.168.1.19:6333"
- ```
+### Service Not Accessible
+- Check if service is running: `docker ps`
+- Verify Traefik labels in compose file
+- Check service logs: `docker logs <service>`
+- Confirm network connectivity between servers
+
+---
+
+**Note**: Replace `<YOUR_DOMAIN>` with your actual domain name and update IP addresses to match your server configuration.
+
+**Created**: October 2025

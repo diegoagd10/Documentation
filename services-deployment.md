@@ -146,6 +146,59 @@ Store sensitive environment variables securely:
 2. For encrypted values, use a password manager
 3. Document all required variables for each service
 
+#### Creating and Encrypting Environment Files
+
+For services that require multiple environment variables, create encrypted environment files:
+
+1. **Create environment file**:
+   ```bash
+   nano .env
+   ```
+
+   Add variables:
+   ```bash
+   POSTGRES_USER=myuser
+   POSTGRES_PASSWORD=mypassword
+   POSTGRES_DB=mydatabase
+   PGADMIN_EMAIL=admin@example.com
+   PGADMIN_PASSWORD=pgadminpass
+   ```
+
+2. **Encrypt the file**:
+   ```bash
+   gpg -c .env
+   # Enter passphrase from password manager
+   ```
+
+3. **Secure the encrypted file**:
+   ```bash
+   # Remove unencrypted file
+   rm .env
+
+   # Verify encryption
+   gpg --decrypt .env.gpg
+   ```
+
+4. **Store encrypted files**:
+   - Upload to secure cloud storage
+   - Keep in password manager
+   - Document decryption procedures
+
+#### Decrypting Environment Files
+
+To use encrypted environment files:
+
+```bash
+# Decrypt for use
+gpg --decrypt .env.gpg > .env
+
+# Use in Docker Compose
+docker-compose --env-file .env up -d
+
+# Remove decrypted file after use
+rm .env
+```
+
 ### Volume Management
 
 Monitor and manage Docker volumes:
@@ -211,7 +264,84 @@ Access Qdrant dashboard at `https://qdrant.local.yourdomain.com/dashboard#/welco
 
 ### Homepage Configuration
 
-Configure Homepage through its web interface or by editing the config files in the Docker volume.
+After deploying Homepage, configure it by editing the configuration files in its Docker volume:
+
+1. Find the Homepage configuration volume:
+```bash
+docker volume ls | grep homepage
+docker volume inspect homepage_homepage-config
+```
+
+2. Locate the configuration directory (usually `/var/lib/docker/volumes/homepage_homepage-config/_data/`)
+
+3. Edit `services.yaml` to add your services:
+```yaml
+---
+# For configuration options and examples, please see:
+# https://gethomepage.dev/configs/services/
+
+- Container Management:
+    - Portainer 01:
+        icon: portainer.png
+        href: https://portainer-01.local.yourdomain.com
+        description: Manages n8n, traefik, homepage, uptime-kuma and backends
+
+    - Portainer 02:
+        icon: portainer.png
+        href: https://portainer-02.local.yourdomain.com
+        description: Manages databases
+
+- Monitoring:
+    - Uptime Kuma:
+        icon: uptime-kuma.png
+        href: https://kuma.local.yourdomain.com
+        description: Verifies that services and apps are still up and running
+
+- Network:
+    - Traefik:
+        icon: traefik.png
+        href: https://traefik.local.yourdomain.com
+        description: Simple reverse proxy server
+
+- Databases:
+    - PG Admin 4:
+        icon: postgres.png
+        href: https://pgadmin.local.yourdomain.com
+        description: PostgreSQL administrator
+
+    - Redis:
+        icon: redis.png
+        href: https://redis.local.yourdomain.com
+        description: Caching administrator
+
+    - Qdrant:
+        icon: qdrant.png
+        href: https://qdrant.local.yourdomain.com/dashboard#/welcome
+        description: Vector database administrator
+```
+
+4. Edit `widgets.yaml` to add system monitoring widgets:
+```yaml
+---
+# For configuration options and examples, please see:
+# https://gethomepage.dev/configs/info-widgets/
+
+- resources:
+    cpu: true
+    cputemp: true
+    memory: true
+    disk: /
+    uptime: true
+
+- search:
+    provider: duckduckgo
+    target: _blank
+```
+
+5. Restart the Homepage container after configuration changes:
+```bash
+docker restart homepage
+```
 
 ## Monitoring and Health Checks
 
