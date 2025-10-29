@@ -181,29 +181,37 @@ mkdir -p ~/traefik
 nano ~/traefik/dynamic.yml
 ```
 
-Add remote service configurations:
+Add the following Traefik dynamic configuration:
 
 ```yaml
 http:
   routers:
-    portainer-svc02:
-      rule: "Host(`portainer-02.local.yourdomain.com`)"
+    portainer-svc01:
+      rule: "Host(`portainer-01.local.dagdappshub.com`)"
       entryPoints:
         - websecure
-      service: portainer-svc
+      service: portainer-svc-01
+      tls:
+        certResolver: cloudflare
+
+    portainer-svc02:
+      rule: "Host(`portainer-02.local.dagdappshub.com`)"
+      entryPoints:
+        - websecure
+      service: portainer-svc-02
       tls:
         certResolver: cloudflare
 
     pgadmin:
-      rule: "Host(`pgadmin.local.yourdomain.com`)"
+      rule: "Host(`pgadmin.local.dagdappshub.com`)"
       entryPoints:
         - websecure
       service: pgadmin-svc
       tls:
         certResolver: cloudflare
 
-    redis-commander:
-      rule: "Host(`redis.local.yourdomain.com`)"
+    redis:
+      rule: "Host(`redis.local.dagdappshub.com`)"
       entryPoints:
         - websecure
       service: redis-svc
@@ -211,7 +219,7 @@ http:
         certResolver: cloudflare
 
     qdrant:
-      rule: "Host(`qdrant.local.yourdomain.com`)"
+      rule: "Host(`qdrant.local.dagdappshub.com`)"
       entryPoints:
         - websecure
       service: qdrant-svc
@@ -219,28 +227,33 @@ http:
         certResolver: cloudflare
 
   services:
-    portainer-svc:
+    portainer-svc-01:
       loadBalancer:
         servers:
-          - url: "http://192.168.1.19:9000"  # Replace with actual IP
+          - url: "http://192.168.1.254:9000"
+
+    portainer-svc-02:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.1.19:9000"
 
     pgadmin-svc:
       loadBalancer:
         servers:
-          - url: "http://192.168.1.19:80"     # Replace with actual IP
+          - url: "http://192.168.1.19:5050"
 
     redis-svc:
       loadBalancer:
         servers:
-          - url: "http://192.168.1.19:8081"   # Replace with actual IP
+          - url: "http://192.168.1.19:8081"
 
     qdrant-svc:
       loadBalancer:
         servers:
-          - url: "http://192.168.1.19:6333"   # Replace with actual IP
+          - url: "http://192.168.1.19:6333"
 ```
 
-**Note**: Update the IP addresses to match your actual server IPs.
+**Note**: This configuration includes specific IP addresses and domain names for your setup. Update as needed for your environment.
 
 #### Update Traefik Configuration
 
@@ -255,42 +268,17 @@ volumes:
 
 ## Portainer Configuration
 
-### Install Portainer (Master Server)
+### Install Portainer
 
-For the server hosting Traefik:
-
-```bash
-docker run -d \
-  --name portainer \
-  --restart unless-stopped \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -v portainer_data:/data \
-  --network traefik-public \
-  --label "traefik.enable=true" \
-  --label "traefik.http.routers.portainer.rule=Host(\`portainer-01.local.yourdomain.com\`)" \
-  --label "traefik.http.routers.portainer.entrypoints=websecure" \
-  --label "traefik.http.routers.portainer.tls.certresolver=cloudflare" \
-  --label "traefik.http.services.portainer.loadbalancer.server.port=9000" \
-  --label "traefik.docker.network=traefik-public" \
-  portainer/portainer-ce:latest
-```
-
-### Install Portainer (Slave Servers)
-
-For other servers:
+Deploy Portainer using the following Docker command:
 
 ```bash
-docker run -d \
-  --name portainer \
-  --restart always \
-  -p 8000:8000 \
-  -p 9443:9443 \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -v portainer_data:/data \
-  portainer/portainer-ce:latest
+docker run -d --name portainer --restart always -p 9000:9000 -p 9443:9443 -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce:latest
 ```
 
-Access slave Portainer at `https://server-ip:9443`
+**Note**: This command deploys Portainer with default settings. For production environments, consider additional security configurations and network isolation.
+
+Access Portainer at `https://server-ip:9443`
 
 
 ## Testing Configuration

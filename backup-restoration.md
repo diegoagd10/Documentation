@@ -272,32 +272,13 @@ sudo systemctl restart fail2ban
 
 ### Install Portainer (if needed)
 
-```bash
-# For master server with Traefik
-docker run -d \
-  --name portainer \
-  --restart unless-stopped \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -v portainer_data:/data \
-  --network traefik-public \
-  --label "traefik.enable=true" \
-  --label "traefik.http.routers.portainer.rule=Host(\`portainer-01.local.yourdomain.com\`)" \
-  --label "traefik.http.routers.portainer.entrypoints=websecure" \
-  --label "traefik.http.routers.portainer.tls.certresolver=cloudflare" \
-  --label "traefik.http.services.portainer.loadbalancer.server.port=9000" \
-  --label "traefik.docker.network=traefik-public" \
-  portainer/portainer-ce:latest
+Deploy Portainer using the following Docker command:
 
-# For slave servers
-docker run -d \
-  --name portainer \
-  --restart always \
-  -p 8000:8000 \
-  -p 9443:9443 \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -v portainer_data:/data \
-  portainer/portainer-ce:latest
+```bash
+docker run -d --name portainer --restart always -p 9000:9000 -p 9443:9443 -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce:latest
 ```
+
+**Note**: This command deploys Portainer with default settings. For production environments, consider additional security configurations and network isolation.
 
 ### Restore Docker Stacks
 
