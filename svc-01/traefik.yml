@@ -2,12 +2,19 @@ version: '3.8'
 
 services:
   traefik:
-    image: traefik:v2.10
+    image: traefik:v3.5 
     container_name: traefik
     restart: unless-stopped
+    
+    # ADD: Cloudflare DNS servers
+    dns:
+      - 1.1.1.1
+      - 1.0.0.1
+    
     environment:
       - CF_API_EMAIL=${CF_API_EMAIL}
       - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}
+    
     command:
       # API Dashboard
       - "--api.dashboard=true"
@@ -23,7 +30,7 @@ services:
       - "--certificatesresolvers.cloudflare.acme.storage=/letsencrypt/acme.json"
       - "--certificatesresolvers.cloudflare.acme.dnschallenge=true"
       - "--certificatesresolvers.cloudflare.acme.dnschallenge.provider=cloudflare"
-      - "--certificatesresolvers.cloudflare.acme.dnschallenge.delaybeforecheck=30"
+      - "--certificatesresolvers.cloudflare.acme.dnschallenge.delaybeforecheck=0"
       - "--certificatesresolvers.cloudflare.acme.dnschallenge.resolvers=1.1.1.1:53,1.0.0.1:53"
       
       # Docker Provider
@@ -32,7 +39,7 @@ services:
       - "--providers.docker.exposedbydefault=false"
       - "--providers.docker.network=traefik-public"
 
-      # File Provider (para apps remotas y configuración adicional)
+      # File Provider
       - "--providers.file.filename=/etc/traefik/dynamic.yml"
       - "--providers.file.watch=true"
       

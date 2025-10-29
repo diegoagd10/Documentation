@@ -36,8 +36,6 @@ This guide covers setting up a private network infrastructure with SSL terminati
    - **TTL**: Auto
 6. Click "Save"
 
-Repeat for each additional server with their respective IP addresses.
-
 **Result**: `*.local.yourdomain.com` now points to your servers.
 
 ## Traefik Reverse Proxy Setup
