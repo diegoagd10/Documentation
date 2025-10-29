@@ -12,11 +12,33 @@ This guide covers the process of adding new environment variables to your self-h
 ## Steps
 
 1. **Download encrypted environments zip** from cloud storage
-2. **Unzip** the downloaded file
-3. **Create or edit environment files** with new variables
-4. **Encrypt files** using `gpg -c <new_file>` and provide the passphrase from password manager
-5. **Zip encrypted files** using `zip file.1.gpg file2.gpg`
-6. **Upload environment files** back to secure cloud storage
+2. **Unzip** the downloaded file:
+   ```bash
+   unzip environments.zip
+   ```
+3. **Decrypt existing files** (if editing existing ones):
+   ```bash
+   gpg --decrypt .env.gpg > .env
+   ```
+4. **Create or edit environment files** with new variables:
+   ```bash
+   nano .env
+   # Add new variables in KEY=VALUE format
+   ```
+5. **Encrypt files** using `gpg -c <new_file>` and provide the passphrase from password manager:
+   ```bash
+   gpg -c .env
+   # Enter passphrase when prompted
+   ```
+6. **Remove unencrypted files** for security:
+   ```bash
+   rm .env
+   ```
+7. **Zip encrypted files** using `zip file.1.gpg file2.gpg`:
+   ```bash
+   zip environments.zip *.gpg
+   ```
+8. **Upload environment files** back to secure cloud storage
 
 ## Security Notes
 
