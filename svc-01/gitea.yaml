@@ -1,0 +1,35 @@
+services:
+  server:
+    image: docker.gitea.com/gitea:1.24.7
+    container_name: gitea
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - GITEA__database__DB_TYPE=postgres
+      - GITEA__database__HOST=192.168.1.19:5432
+      - GITEA__database__NAME=${POSTGRES_DB}
+      - GITEA__database__USER=${POSTGRES_NON_ROOT_USER}
+      - GITEA__database__PASSWD=${POSTGRES_NON_ROOT_PASSWORD}
+    restart: unless-stopped
+    ports:
+      - "222:22"
+    networks:
+      - traefik-public
+    volumes:
+      - gitea:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gitea.rule=Host(`gitea.local.dagdappshub.com`)"
+      - "traefik.http.routers.gitea.entrypoints=websecure"
+      - "traefik.http.routers.gitea.tls.certresolver=cloudflare"
+      - "traefik.http.services.gitea.loadbalancer.server.port=3000"
+      - "traefik.docker.network=traefik-public"
+
+volumes:
+  gitea:
+
+networks:
+  traefik-public:
+    external: true
