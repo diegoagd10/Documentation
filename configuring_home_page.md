@@ -43,6 +43,12 @@ This guide covers configuring the Homepage dashboard for monitoring your self-ho
            description: Manages databases
    
    - Monitoring:
+       - Gitea:
+           icon: gitea.png
+           href: https://gitea.local.dagdappshub.com
+           description: Like git but mine
+   
+   - Monitoring:
        - Uptime Kuma:
            icon: uptime-kuma.png
            href: https://kuma.local.dagdappshub.com
@@ -59,7 +65,7 @@ This guide covers configuring the Homepage dashboard for monitoring your self-ho
            icon: https://d31rfu1d3w8e4q.cloudfront.net/static/favicon.fdf5ef8729cc.png
            href: https://replicate.com/account/billing
            description: Allows to host your own trained models (We have IBM Granite 4 here :))
-   
+             
        - OpenCode:
            icon: https://opencode.ai/_build/assets/opencode-poster-CbUiDHgA.png
            href: https://opencode.ai/workspace/wrk_01K7WM94FGX6MMTY063KE7D2GY/billing
@@ -82,7 +88,7 @@ This guide covers configuring the Homepage dashboard for monitoring your self-ho
            icon: postgres.png
            href: https://pgadmin.local.dagdappshub.com
            description: PostgreSQL administrator
-   
+             
        - Redis:
            icon: redis.png
            href: https://redis.local.dagdappshub.com
