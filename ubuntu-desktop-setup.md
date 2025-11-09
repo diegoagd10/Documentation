@@ -121,6 +121,32 @@ exec tmux new-session -A -s main
 - `tmux ls` - List sessions
 - `tmux attach -t <session-name>` - Attach to session
 
+## 4. Useful Shell Aliases
+
+Add these convenience aliases to your `~/.zshrc` file for improved workflow:
+
+```bash
+# Aliases
+alias pbcopy='xclip -selection clipboard'
+alias pbpaste='xclip -selection clipboard -o'
+alias bat='batcat'
+```
+
+**What these do:**
+- `pbcopy` - macOS-style clipboard copy (requires `xclip`)
+- `pbpaste` - macOS-style clipboard paste (requires `xclip`)
+- `bat` - shorthand for `batcat` (syntax-highlighted cat alternative)
+
+**Install required packages:**
+```bash
+sudo apt install -y xclip bat
+```
+
+**Apply the changes:**
+```bash
+source ~/.zshrc
+```
+
 ---
 
 **Last Updated**: November 2025
