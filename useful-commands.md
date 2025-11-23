@@ -219,9 +219,14 @@ Note: On Ubuntu/Debian, the command is batcat due to name conflict
 **Installation:** https://github.com/asciinema/agg  
 **Install:** `cargo install --git https://github.com/asciinema/agg`
 
+### ttyd
+**Description:** Share your terminal over the web - lightweight web server for broadcasting terminal sessions via browser
+**Installation:** https://github.com/tsl0922/ttyd
+**Install:** `brew install ttyd` (macOS), `sudo snap install ttyd --classic` (Linux), or download from releases
+
 ### fabric
-**Description:** CLI tool for interacting with AI  
-**Installation:** https://github.com/danielmiessler/fabric  
+**Description:** CLI tool for interacting with AI
+**Installation:** https://github.com/danielmiessler/fabric
 **Install:** Follow installation instructions on GitHub
 
 ### ollama
