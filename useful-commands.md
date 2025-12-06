@@ -230,9 +230,23 @@ Note: On Ubuntu/Debian, the command is batcat due to name conflict
 **Install:** Follow installation instructions on GitHub
 
 ### ollama
-**Description:** Run AI models locally and create custom agents  
-**Installation:** https://ollama.ai/  
+**Description:** Run AI models locally and create custom agents
+**Installation:** https://ollama.ai/
 **Install:** `curl -fsSL https://ollama.com/install.sh | sh`
+
+### whisper (OpenAI Whisper)
+**Description:** Automatic speech recognition (ASR) system from OpenAI for transcribing audio files
+**Installation:** https://github.com/openai/whisper
+**Dependencies:** Requires `ffmpeg` and `setuptools-rust`
+**Install:**
+```bash
+# Install dependencies
+sudo apt install ffmpeg
+pip install setuptools-rust
+
+# Install whisper
+pip install -U openai-whisper
+```
 
 ---
 
