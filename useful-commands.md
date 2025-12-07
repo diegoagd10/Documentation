@@ -26,8 +26,36 @@ A curated collection of modern, powerful alternatives to standard Linux commands
 **Install:** `sudo apt install lshw` (Ubuntu/Debian)
 
 ### shred
-**Description:** Securely overwrites files multiple times before deletion to prevent data recovery  
+**Description:** Securely overwrites files multiple times before deletion to prevent data recovery
 **Built-in:** Standard Linux command
+
+### tomb
+**Description:** Command-line tool for creating encrypted file containers - secure storage for sensitive files
+**Installation:** https://github.com/dyne/Tomb
+**Install:** `sudo apt install tomb` (Ubuntu/Debian)
+**Quick Start:**
+```bash
+# Create tomb and key
+tomb dig -s 100 ~/my_secrets.tomb
+tomb forge ~/my_secrets.tomb.key
+tomb lock ~/my_secrets.tomb -k ~/my_secrets.tomb.key
+
+# Open/mount tomb (default: /media/my_secrets/)
+tomb open ~/my_secrets.tomb -k ~/my_secrets.tomb.key
+
+# Add files
+cp files.txt /media/my_secrets/
+
+# Close/encrypt tomb
+tomb close my_secrets
+
+# List mounted tombs
+tomb list
+```
+**Security Notes:**
+- Store key file separately (e.g., USB drive)
+- Without password, files are unrecoverable
+- Backup both `.tomb` and `.tomb.key` files regularly
 
 ---
 
